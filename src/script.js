@@ -7,6 +7,7 @@ var Engine = Matter.Engine,
     Composites = Matter.Composites,
     Composite = Matter.Composite,
     Common = Matter.Common,
+    Constraint = Matter.Constraint,
     Bodies = Matter.Bodies,
     Mouse = Matter.Mouse,
     MouseConstraint = Matter.MouseConstraint,
@@ -48,19 +49,25 @@ Composite.add(world, walls);
 var chain = [];
 
 // loop through icons
-var badges = document.querySelectorAll('.icon');
-for (var badge_i = 0; badge_i < badges.length; badge_i++) {
-
+// var badges = document.querySelectorAll('.icon');
+// for (var badge_i = 0; badge_i < badges.length; badge_i++) {
+var svg = document.getElementById("folder")
   var vertexSets = [];
-  var icon = badges[badge_i];
-  var icon_sprite = icon.dataset.sprite;
+  var icon = svg;
+  // var icon_sprite = icon.dataset.sprite;
   var path = icon.querySelector('path');
 
   var points = Svg.pathToVertices(path, 10);
   vertexSets.push(Vertices.scale(points, 1, 1));
   
-  World.add(engine.world, Bodies.fromVertices((canvasWidth / 2) + (badge_i * 50), 300 - (badge_i * 100), vertexSets, {
+  // folder = Bodies.fromVertices((canvasWidth / 2) + (badge_i * 50), 300 - (badge_i * 100), vertexSets, {
+    for (var i = 0; i < 20; i++) {
+  var folder = Bodies.fromVertices(Math.random() * window.innerWidth, Math.random() * window.innerHeight, vertexSets, {
     render: {
+      fillStyle: 'rgba(0, 0, 0, 0)',
+      strokeStyle: 'rgba(0, 0, 0, 0)',
+      lineWidth: 0,
+      slop: 0,
       options: {
         hasBounds: false
       }//,
@@ -68,9 +75,55 @@ for (var badge_i = 0; badge_i < badges.length; badge_i++) {
       //   texture: icon_sprite
       // }
     }
-  }), true);
+  })
+  let spriteHolder = Bodies.rectangle(
+    folder.bounds.min.x,
+    folder.bounds.min.y,
+    (folder.bounds.max.x - folder.bounds.min.x),
+    (folder.bounds.max.y - folder.bounds.min.y),
+    {
+      collisionFilter: {
+        mask: 0,
+      },
+      render: {
+        fillStyle: 'none',
+        strokeStyle: '#ffffff',
+        sprite: {
+          texture: './folder.png',
+          xOffset: 0,
+          yOffset: 0,
+          xScale: 0.21,
+          yScale: 0.19
+        }
+      }
+    }
+  )
+  let constraint = Constraint.create({
+    bodyA: folder,
+    pointA: {x: 0, y: 10},
+    bodyB: spriteHolder,
+    pointB: {x: 0, y: 10},
+    length: 0,
+    render: {lineWidth: 0}
+  });
+  let constraint2 = Constraint.create({
+    bodyA: folder,
+    pointA: {x: 0, y: -10},
+    bodyB: spriteHolder,
+    pointB: {x: 0, y: -10},
+    length: 0,
+    render: {lineWidth: 0}
+  });
   
+  let group = Composite.create({label: `group`});
+  Composite.add(group, [folder, spriteHolder, constraint, constraint2])
+  Composite.add(world, group)
+  // World.add(engine.world, folder, true);
+// }
 }
+
+
+
 
 // https://github.com/liabru/matter-js/issues/153
 
