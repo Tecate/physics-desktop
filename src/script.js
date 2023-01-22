@@ -1,12 +1,8 @@
-const canvas = document.getElementById('matter');
-
 // module aliases
 var Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
-    Composites = Matter.Composites,
     Composite = Matter.Composite,
-    Common = Matter.Common,
     Constraint = Matter.Constraint,
     Bodies = Matter.Bodies,
     Mouse = Matter.Mouse,
@@ -18,12 +14,9 @@ var Engine = Matter.Engine,
 var engine = Engine.create();
 var world = engine.world;
 
-var canvasWidth = 1650,
-    canvasHeight = 500;
-
 // create a renderer
 var render = Render.create({
-    element: canvas,
+    element: document.getElementById('matter'),
     engine: engine,
     options: {
       background: 'transparent',
@@ -36,7 +29,6 @@ var render = Render.create({
 
 // 0,0 is top left
 // x, y, w, h
-var peek = 5;
 var wallThickness = 2000;
 var wallLength = 8000;
 var floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight+(wallThickness/2), wallLength, wallThickness, { isStatic: true })
@@ -47,34 +39,25 @@ var ceiling = Bodies.rectangle(window.innerWidth/2, -(wallThickness/2), wallLeng
 var walls = [floor, leftWall, rightWall, ceiling];
 Composite.add(world, walls);
 
-// loop through icons
-// var badges = document.querySelectorAll('.icon');
-// for (var badge_i = 0; badge_i < badges.length; badge_i++) {
 var svg = document.getElementById("folder")
-  var vertexSets = [];
-  var icon = svg;
-  // var icon_sprite = icon.dataset.sprite;
-  var path = icon.querySelector('path');
+var vertexSets = [];
+var path = svg.querySelector('path');
 
-  var points = Svg.pathToVertices(path, 10);
-  vertexSets.push(Vertices.scale(points, 1, 1));
+var points = Svg.pathToVertices(path, 10);
+vertexSets.push(Vertices.scale(points, 1, 1));
   
-  // folder = Bodies.fromVertices((canvasWidth / 2) + (badge_i * 50), 300 - (badge_i * 100), vertexSets, {
-    for (var i = 0; i < 20; i++) {
+for (var i = 0; i < 20; i++) {
   var folder = Bodies.fromVertices(Math.random() * window.innerWidth, Math.random() * window.innerHeight, vertexSets, {
     render: {
       fillStyle: 'rgba(0, 0, 0, 0)',
       strokeStyle: 'rgba(0, 0, 0, 0)',
       lineWidth: 0,
-      // slop: 0,
       options: {
         hasBounds: false
-      }//,
-      // sprite: {
-      //   texture: icon_sprite
-      // }
+      }
     }
-  })
+  });
+
   var spriteHolder = Bodies.rectangle(
     folder.bounds.min.x,
     folder.bounds.min.y,
@@ -90,13 +73,14 @@ var svg = document.getElementById("folder")
         sprite: {
           texture: './foldercrop.png',
           xOffset: 0,
-          yOffset: 0.07,
-          xScale: 0.2,
-          yScale: 0.19
+          yOffset: 0.02,
+          xScale: 0.21,
+          yScale: 0.195
         }
       }
     }
-  )
+  );
+
   let constraint = Constraint.create({
     bodyA: folder,
     pointA: {x: 0, y: 10},
@@ -105,6 +89,7 @@ var svg = document.getElementById("folder")
     length: 0,
     render: {lineWidth: 0}
   });
+
   let constraint2 = Constraint.create({
     bodyA: folder,
     pointA: {x: 0, y: -10},
@@ -113,18 +98,11 @@ var svg = document.getElementById("folder")
     length: 0,
     render: {lineWidth: 0}
   });
-  
+
   let group = Composite.create({label: `group`});
   Composite.add(group, [folder, spriteHolder, constraint, constraint2])
   Composite.add(world, group)
-  // World.add(engine.world, folder, true);
-// }
 }
-
-
-
-
-// https://github.com/liabru/matter-js/issues/153
 
 // add mouse control
 var mouse = Mouse.create(render.canvas),
