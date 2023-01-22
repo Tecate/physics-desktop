@@ -1,47 +1,21 @@
-/**
- * Randomly shuffle an array
- * https://stackoverflow.com/a/2450976/1293256
- * @param  {Array} array The array to shuffle
- * @return {String}      The first item in the shuffled array
- */
-var shuffle = function (array) {
-
-	var currentIndex = array.length;
-	var temporaryValue, randomIndex;
-
-	// While there remain elements to shuffle...
-	while (0 !== currentIndex) {
-		// Pick a remaining element...
-		randomIndex = Math.floor(Math.random() * currentIndex);
-		currentIndex -= 1;
-
-		// And swap it with the current element.
-		temporaryValue = array[currentIndex];
-		array[currentIndex] = array[randomIndex];
-		array[randomIndex] = temporaryValue;
-	}
-
-	return array;
-
-};
-
-
-
-
-const canvas = document.getElementById('matter-demo');
+const canvas = document.getElementById('matter');
 
 // module aliases
 var Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
     Composites = Matter.Composites,
+    Composite = Matter.Composite,
     Common = Matter.Common,
     Bodies = Matter.Bodies,
+    Mouse = Matter.Mouse,
+    MouseConstraint = Matter.MouseConstraint,
     Svg = Matter.Svg,
     Vertices = Matter.Vertices;
 
 // create an engine
 var engine = Engine.create();
+var world = engine.world;
 
 var canvasWidth = 1650,
     canvasHeight = 500;
@@ -51,25 +25,30 @@ var render = Render.create({
     element: canvas,
     engine: engine,
     options: {
-      wireframes: true,
-      showAngleIndicator: true,
-      width: canvasWidth,
-      height: canvasHeight
+      wireframes: false,
+      showAngleIndicator: false,
+      width: window.innerWidth,
+      height: window.innerHeight
     }
 });
 
-var ground = Bodies.rectangle(canvasWidth/2, canvasHeight, canvasWidth, 20, { isStatic: true });
-var ceiling = Bodies.rectangle(canvasWidth/2, 0, canvasWidth, 20, { isStatic: true });
-var wallLeft = Bodies.rectangle(0, canvasHeight/2, 20, canvasHeight, { isStatic: true });
-var wallRight = Bodies.rectangle(canvasWidth, canvasHeight/2, 20, canvasHeight, { isStatic: true });
+// 0,0 is top left
+// x, y, w, h
+var peek = 5;
+var wallThickness = 2000;
+var wallLength = 5000;
+var floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight+(wallThickness/2), wallLength, wallThickness, { isStatic: true })
+var leftWall = Bodies.rectangle(-(wallThickness/2), window.innerHeight/2, wallThickness, wallLength, { isStatic: true })
+var rightWall = Bodies.rectangle(window.innerWidth+(wallThickness/2), window.innerHeight/2, wallThickness, wallLength, { isStatic: true })
+var ceiling = Bodies.rectangle(window.innerWidth/2, -(wallThickness/2), wallLength, wallThickness, { isStatic: true })
 
-// add all of the bodies to the world
-World.add(engine.world, [ceiling, ground, wallLeft, wallRight]);
+var walls = [floor, leftWall, rightWall, ceiling];
+Composite.add(world, walls);
 
 var chain = [];
 
 // loop through icons
-var badges = document.querySelectorAll('.badge-icon');
+var badges = document.querySelectorAll('.icon');
 for (var badge_i = 0; badge_i < badges.length; badge_i++) {
 
   var vertexSets = [];
@@ -83,34 +62,34 @@ for (var badge_i = 0; badge_i < badges.length; badge_i++) {
   World.add(engine.world, Bodies.fromVertices((canvasWidth / 2) + (badge_i * 50), 300 - (badge_i * 100), vertexSets, {
     render: {
       options: {
-        hasBounds: true
-      },
-      sprite: {
-        texture: icon_sprite
-      }
+        hasBounds: false
+      }//,
+      // sprite: {
+      //   texture: icon_sprite
+      // }
     }
   }), true);
   
 }
 
-var timer = 20000;
-var gravityDirection = 'left';
+// https://github.com/liabru/matter-js/issues/153
 
-setInterval(function() {
-  engine.world.gravity.x = gravityDirection == 'left' ? 0.5: -0.5;
-  gravityDirection = gravityDirection == 'left' ? 'right' : 'left';
-  
-  engine.world.gravity.y = 0.25;
-  
-  setTimeout(function() {
-    engine.world.gravity.y = 1;
-  }, timer / 4);
-  
-  setTimeout(function() {
-    engine.world.gravity.x = 0;
-  }, timer / 5);
-  
-}, timer);
+// add mouse control
+var mouse = Mouse.create(render.canvas),
+    mouseConstraint = MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+            stiffness: 0.2,
+            render: {
+                visible: false
+            }
+        }
+    });
+
+Composite.add(world, mouseConstraint);
+
+// keep the mouse in sync with rendering
+render.mouse = mouse;
 
 // run the engine
 Engine.run(engine);
@@ -118,5 +97,27 @@ Engine.run(engine);
 // run the renderer
 Render.run(render);
 
+window.addEventListener('resize', () => { 
+  render.bounds.max.x = window.innerWidth;
+  render.bounds.max.y = window.innerHeight;
+  render.options.width = window.innerWidth;
+  render.options.height = window.innerHeight;
+  render.canvas.width = window.innerWidth;
+  render.canvas.height = window.innerHeight;
+  Matter.Render.setPixelRatio(render, window.devicePixelRatio); // added this
 
+  Matter.Body.setPosition(floor,
+      Matter.Vector.create(
+          window.innerWidth/2,
+          window.innerHeight+(wallThickness/2)
+      )
+  )
+
+  Matter.Body.setPosition(rightWall,
+      Matter.Vector.create(
+          window.innerWidth+(wallThickness/2),
+          window.innerHeight/2
+      )
+  )
+});
 
