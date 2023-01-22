@@ -71,7 +71,7 @@ for (var i = 0; i < 20; i++) {
         fillStyle: 'none',
         strokeStyle: 'none',
         sprite: {
-          texture: './foldercrop.png',
+          texture: 'img/foldercrop.png',
           xOffset: 0,
           yOffset: 0.02,
           xScale: 0.21,
