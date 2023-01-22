@@ -26,6 +26,7 @@ var render = Render.create({
     element: canvas,
     engine: engine,
     options: {
+      background: 'transparent',
       wireframes: false,
       showAngleIndicator: false,
       width: window.innerWidth,
@@ -37,7 +38,7 @@ var render = Render.create({
 // x, y, w, h
 var peek = 5;
 var wallThickness = 2000;
-var wallLength = 5000;
+var wallLength = 8000;
 var floor = Bodies.rectangle(window.innerWidth/2, window.innerHeight+(wallThickness/2), wallLength, wallThickness, { isStatic: true })
 var leftWall = Bodies.rectangle(-(wallThickness/2), window.innerHeight/2, wallThickness, wallLength, { isStatic: true })
 var rightWall = Bodies.rectangle(window.innerWidth+(wallThickness/2), window.innerHeight/2, wallThickness, wallLength, { isStatic: true })
@@ -45,8 +46,6 @@ var ceiling = Bodies.rectangle(window.innerWidth/2, -(wallThickness/2), wallLeng
 
 var walls = [floor, leftWall, rightWall, ceiling];
 Composite.add(world, walls);
-
-var chain = [];
 
 // loop through icons
 // var badges = document.querySelectorAll('.icon');
@@ -67,7 +66,7 @@ var svg = document.getElementById("folder")
       fillStyle: 'rgba(0, 0, 0, 0)',
       strokeStyle: 'rgba(0, 0, 0, 0)',
       lineWidth: 0,
-      slop: 0,
+      // slop: 0,
       options: {
         hasBounds: false
       }//,
@@ -76,7 +75,7 @@ var svg = document.getElementById("folder")
       // }
     }
   })
-  let spriteHolder = Bodies.rectangle(
+  var spriteHolder = Bodies.rectangle(
     folder.bounds.min.x,
     folder.bounds.min.y,
     (folder.bounds.max.x - folder.bounds.min.x),
@@ -87,12 +86,12 @@ var svg = document.getElementById("folder")
       },
       render: {
         fillStyle: 'none',
-        strokeStyle: '#ffffff',
+        strokeStyle: 'none',
         sprite: {
-          texture: './folder.png',
+          texture: './foldercrop.png',
           xOffset: 0,
-          yOffset: 0,
-          xScale: 0.21,
+          yOffset: 0.07,
+          xScale: 0.2,
           yScale: 0.19
         }
       }
